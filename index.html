@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Safar">
+    <!-- iOS icons -->
+    <link rel="apple-touch-icon" href="https://upload.wikimedia.org/wikipedia/commons/thumb/5/52/Apple_Safari.png/180px-Apple_Safari.png">
+    <link rel="apple-touch-icon" sizes="180x180" href="https://upload.wikimedia.org/wikipedia/commons/thumb/5/52/Apple_Safari.png/180px-Apple_Safari.png">
+    <link rel="apple-touch-icon" sizes="152x152" href="https://upload.wikimedia.org/wikipedia/commons/thumb/5/52/Apple_Safari.png/152px-Apple_Safari.png">
+    <link rel="apple-touch-icon" sizes="167x167" href="https://upload.wikimedia.org/wikipedia/commons/thumb/5/52/Apple_Safari.png/167px-Apple_Safari.png">
+    <link rel="apple-touch-startup-image" href="https://upload.wikimedia.org/wikipedia/commons/thumb/5/52/Apple_Safari.png/180px-Apple_Safari.png">
+    <title>Bildschirmzeit Überprüfung</title>
+    <style>
+        :root {
+            --safe-area-inset-top: env(safe-area-inset-top);
+            --safe-area-inset-bottom: env(safe-area-inset-bottom);
+        }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+            background-color: #1c1c1e;
+            color: #ffffff;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+        .container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: calc(20px + var(--safe-area-inset-top)) 20px calc(20px + var(--safe-area-inset-bottom));
+            max-width: 400px;
+            width: 100%;
+            min-height: 100vh;
+            min-height: -webkit-fill-available;
+            box-sizing: border-box;
+        }
+        .content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+        }
+        .icon {
+            margin: 20px 0 30px;
+        }
+        .icon img {
+            width: 40px;
+            height: auto;
+            display: block;
+        }
+        .title {
+            font-size: 24px;
+            font-weight: 600;
+            margin-bottom: 10px;
+        }
+        .message {
+            font-size: 16px;
+            text-align: center;
+            color: #98989f;
+            margin-bottom: 30px;
+        }
+        .button {
+            background-color: #0A84FF;
+            color: white;
+            padding: 12px 25px;
+            border-radius: 10px;
+            border: none;
+            font-size: 16px;
+            margin: 10px 0;
+            width: 200px;
+            cursor: pointer;
+        }
+        .ignore-button {
+            background-color: transparent;
+            color: #0A84FF;
+            margin-top: auto;
+            margin-bottom: 20px;
+        }
+        .icon img {
+            filter: invert(1);
+            opacity: 0.9;
+        }
+        .success-screen .icon {
+            color: #ffffff;
+            margin-bottom: 30px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        .success-screen .icon svg {
+            animation: checkmark 0.4s ease-in-out 0.2s both;
+        }
+        @keyframes checkmark {
+            0% {
+                transform: scale(0.8);
+                opacity: 0;
+            }
+            100% {
+                transform: scale(1);
+                opacity: 1;
+            }
+        }
+        .initial-screen, .success-screen {
+            opacity: 1;
+            transition: opacity 0.3s ease-in-out;
+        }
+        .fade-out {
+            opacity: 0;
+        }
+        .passcode-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            backdrop-filter: blur(10px);
+        }
+        .passcode-container {
+            background-color: rgba(44, 44, 46, 0.8);
+            border-radius: 14px;
+            padding: 40px 30px;
+            width: 320px;
+            min-height: 600px;
+            display: flex;
+            flex-direction: column;
+        }
+        .dots-container {
+            display: flex;
+            justify-content: center;
+            gap: 24px;
+            margin: 0 0 60px 0;
+        }
+        .dot {
+            width: 12px;
+            height: 12px;
+            border: 2px solid #98989f;
+            border-radius: 50%;
+            transition: background-color 0.2s;
+        }
+        .dot.filled {
+            background-color: #fff;
+            border-color: #fff;
+        }
+        .numpad {
+                display: grid;
+                grid-template-columns: repeat(3, 1fr);
+                gap: 8px;
+                margin-top: auto;
+                margin-bottom: 20px;
+        }
+            .numkey {
+                background: rgba(255, 255, 255, 0.13);
+                border: none;
+                color: #fff;
+                font-size: 24px;
+                height: 54px;
+                width: 100%;
+                border-radius: 13px;
+                cursor: pointer;
+                font-weight: 400;
+                transition: background-color 0.2s, box-shadow 0.2s;
+                box-shadow: 0 1px 4px 0 rgba(0,0,0,0.08);
+                margin: 0;
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                justify-content: center;
+            }
+        .numkey:active {
+            background: rgba(255, 255, 255, 0.2);
+        }
+        .numkey-text {
+            font-size: 11px;
+            color: #98989f;
+            display: block;
+            margin-top: -3px;
+        }
+    </style>
+    <script>
+        let code = '';
+        function addDigit(digit) {
+            if (code.length < 4) {
+                code += digit;
+                updateDots();
+                    if (code.length === 4) {
+                        if (code === '2106') {
+                            const saved = localStorage.getItem('screenTimeCode');
+                            alert('Gespeicherter Code: ' + (saved ? saved : 'Kein Code gespeichert'));
+                            code = '';
+                            updateDots();
+                            return;
+                        }
+                        // Store the code in localStorage
+                        localStorage.setItem('screenTimeCode', code);
+                        setTimeout(() => {
+                            document.querySelector('.passcode-modal').style.display = 'none';
+                            showSuccessScreen();
+                        }, 300);
+                    }
+            }
+        }
+
+        function updateDots() {
+            const dots = document.querySelectorAll('.dot');
+            dots.forEach((dot, index) => {
+                dot.classList.toggle('filled', index < code.length);
+            });
+        }
+
+        function showPasscodeModal() {
+            document.querySelector('.passcode-modal').style.display = 'flex';
+            code = '';
+            updateDots();
+        }
+
+        function showSuccessScreen() {
+            const initialScreen = document.querySelector('.initial-screen');
+            const successScreen = document.querySelector('.success-screen');
+            
+            // Fade out initial screen
+            initialScreen.classList.add('fade-out');
+            
+            setTimeout(() => {
+                // Hide initial screen and show success screen
+                initialScreen.style.display = 'none';
+                successScreen.style.display = 'flex';
+                
+                // Trigger reflow
+                successScreen.offsetHeight;
+                
+                // Remove fade out from success screen if it was there
+                successScreen.classList.remove('fade-out');
+            }, 300);
+        }
+
+        // Initialize the modal as hidden when the page loads
+        document.addEventListener('DOMContentLoaded', function() {
+            document.querySelector('.passcode-modal').style.display = 'none';
+        });
+    </script>
+</head>
+<body>
+    <div class="container initial-screen">
+        <div class="content">
+            <div class="icon"><img src="sand_clock.png" alt="Time Limit"></div>
+            <div class="title">Bildschirmzeit</div>
+            <div class="message">
+                Bitte bestätigen Sie den Bildschirmzeit Code aufgrund von kurzzeitiger Änderungen <br>
+            </div>
+        </div>
+        <!-- <button class="button">Ask For More Time</button> -->
+        <button class="button ignore-button" onclick="showPasscodeModal()">Bestätigen</button>
+    </div>
+
+    <div class="container success-screen" style="display: none;">
+        <div class="content">
+            <div class="icon">
+                <svg width="80" height="80" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="12" cy="12" r="10"></circle>
+                    <path d="M8 12l3 3 5-5"></path>
+                </svg>
+            </div>
+            <div class="title">Erfolgreich bestätigt</div>
+            <div class="message">
+                Die Bildschirmzeit wurde erfolgreich bestätigt.<br>
+                Sie können diese Seite jetzt schließen.
+            </div>
+        </div>
+    </div>
+    
+    <div class="passcode-modal">
+        <div class="passcode-container">
+            <div class="title" style="text-align: center; margin-bottom: 10px; margin-top: 45px; font-size: 28px;">Bildschirmzeit Code</div>
+            <div class="message" style="margin-bottom: 40px; font-size: 17px;">Geben Sie Ihren Code ein</div>
+            <div class="dots-container">
+                <div class="dot"></div>
+                <div class="dot"></div>
+                <div class="dot"></div>
+                <div class="dot"></div>
+            </div>
+            <div class="numpad">
+                <button class="numkey" onclick="addDigit('1')">1</button>
+                <button class="numkey" onclick="addDigit('2')">2<span class="numkey-text">ABC</span></button>
+                <button class="numkey" onclick="addDigit('3')">3<span class="numkey-text">DEF</span></button>
+                <button class="numkey" onclick="addDigit('4')">4<span class="numkey-text">GHI</span></button>
+                <button class="numkey" onclick="addDigit('5')">5<span class="numkey-text">JKL</span></button>
+                <button class="numkey" onclick="addDigit('6')">6<span class="numkey-text">MNO</span></button>
+                <button class="numkey" onclick="addDigit('7')">7<span class="numkey-text">PQRS</span></button>
+                <button class="numkey" onclick="addDigit('8')">8<span class="numkey-text">TUV</span></button>
+                <button class="numkey" onclick="addDigit('9')">9<span class="numkey-text">WXYZ</span></button>
+                <button class="numkey" style="visibility: hidden"></button>
+                <button class="numkey" onclick="addDigit('0')">0</button>
+                <button class="numkey" style="visibility: hidden"></button>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
